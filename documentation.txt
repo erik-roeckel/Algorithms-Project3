@@ -1,0 +1,37 @@
+Erik Roeckel
+--------------------------------------------------------------------------------
+						Documentation
+--------------------------------------------------------------------------------
+To start off my creation of this Car application I created a Car object in Car.java. In this object I stored fields relative to VIN, make, model, price, mileage, and color. In this class I provided getter methods that return each indivual field. However, I only made setter methods for price, mileage, and color becasue these are the only fields which can be modified once established. I also included a method makeModelString() which combines the make and model to be used for options 6 and 7 (retrieve by specified make and model) which I will descibe in more detail later.
+
+After my Car object was established I began to create the main driver program known as CarTracker.java. The first condition I handled in this driver was reading in the test file (cars.txt) and using that to intialize my data structure each time the program was run. Using cars.txt in the exact format it was given to us, I skip the first line of useless text and read in the rest of the file as Car objects use ":" as a delimeter between fields. Being that I had to add to then be adding these new Cars to a priority queue, I knew it was time to decide what symbol table implementation I would use to make this priority queue indexable and how I would back this priority queue using a min heap data structure. Looking for some guidance in the beginning, I first downloaded IndexMinPQ.java from the book to get a better idea of what I should be doing. After gather a good understanding of how this algorithm should work, I decided to take a different approach than IndexMinPQ.java. For this approach I decided to use a Hashtable as my symbol table, and as a way of maintaining the min heap array. To make things simpiler I first focused on just creating a min price prioirty queue, deciding to worry about min mileage later.
+
+I named this min price priority queue priorityPriceQueue.java. In this class I declare a new HashTable object which maps Strings to Integers. The reason I chose this, is because I will be hashing VIN strings to index's in the min heap array labeled carHeap. Ultimatley, I chose to use a hash table as the symbol table implementation for this priority queue, because in the average case inserting, deleting, and retrieving from a hashtable is Θ(1). Therefore, this means that in the average case the runtime of retrieving an index in the heap array from a car VIN number would be constant time. This is a huge advantage of hash tables. After creating the constructor for priorityPriceQueue.java it was time to move on to the other methods.
+
+For priorityPriceQueue.java:
+----------------------------
+	insert(Car car) --> to implement insert a car into the priority queue I first check if the heap array is full. If the min heap array is full I double the size of the array so that more cars can be added to the priority queue. After this I place the new car to be added at the end of the heap array, then put this new car into the hashtable based on its VIN number, which computes an index for the new car being added. Then i call swim() taken from IndexMinPQ to ensure that the min heap properties are satisifed after adding this car (if price of car need to move to higher priority swim up the heap).
+
+	updatePrice/Mileage/Color--> to implement updating either the price, mileage, or color I use the VIN number to find the Cars index in the array and then set a new price, mileage, or color for this car. Note that from both price and mileage I call swim() and sink() to ensure that the heap properties are satisfied after updating the price or mileage. This isn't necessary for color
+
+	delete(String findVIN) -- > for delete I once again use the cars VIN number to find its index in array (using Hashtable). Once I have the car to remove index I first check if the car to be removed is the last index in the heap array, if so I can just remove this car from the Hashtable, set that array index to null and decrement the amount of Cars in the queue. If the index to be removed is not the final leaf in heap, you exchange it with the last leaf in the heap so that it can be easily removed. Once you have switched these values you remove the index to be removed from the symbol table and decrement the size of the queue. However, we are not done because you also must make sure that the index you just switched it with satisfys the mean heap properties, which is why I call swim() and sink()
+
+	minCarPrice() --> min price will always be at index 1 of priority queue(heap array)
+
+For priorityMileageQueue.java:
+--------------------------------
+	all methods work exactly the same however the priority queue is maintained by min mileage rather than min price. Therefore, mileage is your priority comparison.
+
+For makeModelPriceQueues.java and makeModelMileageQueue.java
+----------------------------------------------------
+	Both of these classes use an array of priority queues either by price or by mileage based on a specific make and model. In order to have an average runtime of constant time Θ(1) I combined the make and model of cars and used this value to hash each combination of make and model to the correct queue in the array of queue.
+
+
+Concerning Runtime
+-------------------------------------
+
+The reason as to why I chose a hashtable to implement this indexable priority queue is because hashtables have an average runtime for update, retrieval, add, and remove of Θ(1). In the worst-case hashtables perform a O(n) runtime when lots of collisions happen, which won't occur much here cause VIN numbers are unique. The overall runtime of updating a car would then come out to O(1) + O(logn) + O(logn), which would then deduce to just O(logn). Delete would also be O(logn).
+
+Concerning Space (Memory Overhead)
+------------------------------------
+This application tradesoff memory overhead for efficency. Memory is proprtion to the amount of queues that are being maintained. Which in this case woiuld be O(N + 2), where N = the amount of different make + model combinations and + 2 account for the regular price and mileage queues
